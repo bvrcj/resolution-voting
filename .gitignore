@@ -1,6 +1,8 @@
 # Gradle
 .gradle/
 build/
+build/classes/
+build/tmp/
 **/build/
 
 # IntelliJ IDEA
@@ -12,6 +14,11 @@ out/
 
 # Logs
 *.log
+*.class
+*.class*
+*.lock
+*.bin
+*.probe
 
 # OS
 .DS_Store

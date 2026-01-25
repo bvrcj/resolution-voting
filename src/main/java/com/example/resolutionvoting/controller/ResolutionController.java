@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,12 +33,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.validation.annotation.Validated;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
 @RequestMapping("/api/resolutions")
 @Tag(name = "Resolutions", description = "Create, publish, and vote on resolutions.")
+@Validated
 public class ResolutionController {
 
     private final ResolutionRepository resolutionRepository;
@@ -89,7 +92,7 @@ public class ResolutionController {
                     content = @Content(schema = @Schema(implementation = ResolutionResponse.class))),
             @ApiResponse(responseCode = "404", description = "Resolution not found")
     })
-    public ResolutionResponse getResolution(@PathVariable Long id) {
+    public ResolutionResponse getResolution(@PathVariable @Positive Long id) {
         return ResolutionResponse.from(resolutionService.getResolution(id));
     }
 
@@ -102,7 +105,7 @@ public class ResolutionController {
             @ApiResponse(responseCode = "404", description = "Resolution not found")
     })
     public ResolutionResponse updateResolution(
-            @PathVariable Long id,
+            @PathVariable @Positive Long id,
             @Valid @RequestBody UpdateResolutionRequest request
     ) {
         Resolution resolution = resolutionService.getResolution(id);
@@ -125,7 +128,7 @@ public class ResolutionController {
             @ApiResponse(responseCode = "400", description = "Only DRAFT resolutions can be deleted"),
             @ApiResponse(responseCode = "404", description = "Resolution not found")
     })
-    public void deleteResolution(@PathVariable Long id) {
+    public void deleteResolution(@PathVariable @Positive Long id) {
         Resolution resolution = resolutionRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Resolution not found"));
         if (resolution.getStatus() != ResolutionStatus.DRAFT) {
@@ -142,7 +145,7 @@ public class ResolutionController {
             @ApiResponse(responseCode = "400", description = "Invalid status transition"),
             @ApiResponse(responseCode = "404", description = "Resolution not found")
     })
-    public ResolutionResponse publish(@PathVariable Long id) {
+    public ResolutionResponse publish(@PathVariable @Positive Long id) {
         return ResolutionResponse.from(resolutionService.publish(id));
     }
 
@@ -154,7 +157,7 @@ public class ResolutionController {
             @ApiResponse(responseCode = "400", description = "Invalid status transition"),
             @ApiResponse(responseCode = "404", description = "Resolution not found")
     })
-    public ResolutionResponse startVoting(@PathVariable Long id) {
+    public ResolutionResponse startVoting(@PathVariable @Positive Long id) {
         return ResolutionResponse.from(resolutionService.startVoting(id));
     }
 
@@ -166,7 +169,7 @@ public class ResolutionController {
             @ApiResponse(responseCode = "400", description = "Direct voting is not active"),
             @ApiResponse(responseCode = "404", description = "Resolution not found")
     })
-    public ResolutionResponse endDirectVoting(@PathVariable Long id) {
+    public ResolutionResponse endDirectVoting(@PathVariable @Positive Long id) {
         return ResolutionResponse.from(resolutionService.endDirectVoting(id));
     }
 
@@ -178,7 +181,7 @@ public class ResolutionController {
             @ApiResponse(responseCode = "400", description = "Invalid status transition"),
             @ApiResponse(responseCode = "404", description = "Resolution not found")
     })
-    public ResolutionResponse startProxyVoting(@PathVariable Long id) {
+    public ResolutionResponse startProxyVoting(@PathVariable @Positive Long id) {
         return ResolutionResponse.from(resolutionService.startProxyVoting(id));
     }
 
@@ -190,7 +193,7 @@ public class ResolutionController {
             @ApiResponse(responseCode = "400", description = "Invalid status transition"),
             @ApiResponse(responseCode = "404", description = "Resolution not found")
     })
-    public ResolutionResultsResponse endProxyVoting(@PathVariable Long id) {
+    public ResolutionResultsResponse endProxyVoting(@PathVariable @Positive Long id) {
         resolutionService.endProxyVoting(id);
         return resolutionService.results(id);
     }
@@ -203,7 +206,7 @@ public class ResolutionController {
             @ApiResponse(responseCode = "400", description = "Voting must be closed to publish results"),
             @ApiResponse(responseCode = "404", description = "Resolution not found")
     })
-    public ResolutionResultsResponse publishResults(@PathVariable Long id) {
+    public ResolutionResultsResponse publishResults(@PathVariable @Positive Long id) {
         resolutionService.publishResults(id);
         return resolutionService.results(id);
     }
@@ -221,7 +224,7 @@ public class ResolutionController {
             @ApiResponse(responseCode = "400", description = "Invalid vote"),
             @ApiResponse(responseCode = "404", description = "Resolution or voter not found")
     })
-    public void castVote(@PathVariable Long id, @Valid @RequestBody VoteRequest request) {
+    public void castVote(@PathVariable @Positive Long id, @Valid @RequestBody VoteRequest request) {
         voteService.castVote(id, request);
     }
 
@@ -232,7 +235,7 @@ public class ResolutionController {
                     content = @Content(schema = @Schema(implementation = ResolutionResultsResponse.class))),
             @ApiResponse(responseCode = "404", description = "Resolution not found")
     })
-    public ResolutionResultsResponse results(@PathVariable Long id) {
+    public ResolutionResultsResponse results(@PathVariable @Positive Long id) {
         return resolutionService.results(id);
     }
 }

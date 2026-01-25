@@ -48,12 +48,13 @@ public class VoteService {
             proxyFor = userRepository.findById(request.getProxyForUserId())
                     .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Proxy user not found"));
         }
+        final User finalProxyFor = proxyFor;
 
-        if (resolution.getStatus() == ResolutionStatus.VOTING && proxyFor != null) {
+        if (resolution.getStatus() == ResolutionStatus.VOTING && finalProxyFor != null) {
             throw new ResponseStatusException(BAD_REQUEST, "Proxy voting is not active for this resolution");
         }
 
-        if (resolution.getStatus() == ResolutionStatus.PROXY_VOTING && proxyFor == null) {
+        if (resolution.getStatus() == ResolutionStatus.PROXY_VOTING && finalProxyFor == null) {
             throw new ResponseStatusException(BAD_REQUEST, "Direct voting has ended for this resolution");
         }
 
@@ -65,11 +66,11 @@ public class VoteService {
             );
         }
 
-        User effectiveVoter = proxyFor != null ? proxyFor : voter;
+        User effectiveVoter = finalProxyFor != null ? finalProxyFor : voter;
 
         return voteRepository.findByResolutionIdAndEffectiveVoterId(resolutionId, effectiveVoter.getId())
                 .map(existing -> {
-                    if (proxyFor != null && existing.getProxyFor() == null) {
+                    if (finalProxyFor != null && existing.getProxyFor() == null) {
                         throw new ResponseStatusException(
                                 BAD_REQUEST,
                                 "User already voted directly; proxy vote is not allowed"
@@ -79,7 +80,7 @@ public class VoteService {
                     return voteRepository.save(existing);
                 })
                 .orElseGet(() -> voteRepository.save(
-                        new Vote(resolution, voter, proxyFor, effectiveVoter, request.getChoice())
+                        new Vote(resolution, voter, finalProxyFor, effectiveVoter, request.getChoice())
                 ));
     }
 }

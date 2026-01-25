@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,12 +24,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.validation.annotation.Validated;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
 @RequestMapping("/api/users")
 @Tag(name = "Users", description = "Manage users who can vote on resolutions.")
+@Validated
 public class UserController {
 
     private final UserRepository userRepository;
@@ -70,7 +73,7 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = UserResponse.class))),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public UserResponse getUser(@PathVariable Long id) {
+    public UserResponse getUser(@PathVariable @Positive Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "User not found"));
         return UserResponse.from(user);
@@ -83,7 +86,7 @@ public class UserController {
             @ApiResponse(responseCode = "204", description = "User deleted"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public void deleteUser(@PathVariable Long id) {
+    public void deleteUser(@PathVariable @Positive Long id) {
         if (!userRepository.existsById(id)) {
             throw new ResponseStatusException(NOT_FOUND, "User not found");
         }

@@ -3,6 +3,7 @@ package com.example.resolutionvoting.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 @Schema(name = "UpdateResolutionRequest", description = "Payload to update a draft resolution.")
 public class UpdateResolutionRequest {
@@ -15,6 +16,7 @@ public class UpdateResolutionRequest {
     private String description;
 
     @NotNull
+    @Positive
     @Schema(example = "1", description = "Room id where this resolution is being voted.")
     private Long roomId;
 

@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,11 +26,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.validation.annotation.Validated;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
 @RequestMapping("/api/rooms")
 @Tag(name = "Rooms", description = "Manage rooms used for resolution voting.")
+@Validated
 public class RoomController {
 
     private final RoomRepository roomRepository;
@@ -68,7 +71,7 @@ public class RoomController {
                     content = @Content(schema = @Schema(implementation = RoomResponse.class))),
             @ApiResponse(responseCode = "404", description = "Room not found")
     })
-    public RoomResponse getRoom(@PathVariable Long id) {
+    public RoomResponse getRoom(@PathVariable @Positive Long id) {
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Room not found"));
         return RoomResponse.from(room);
@@ -81,7 +84,7 @@ public class RoomController {
                     content = @Content(schema = @Schema(implementation = RoomResponse.class))),
             @ApiResponse(responseCode = "404", description = "Room not found")
     })
-    public RoomResponse updateRoom(@PathVariable Long id, @Valid @RequestBody UpdateRoomRequest request) {
+    public RoomResponse updateRoom(@PathVariable @Positive Long id, @Valid @RequestBody UpdateRoomRequest request) {
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Room not found"));
         room.setName(request.getName());
@@ -97,7 +100,7 @@ public class RoomController {
             @ApiResponse(responseCode = "204", description = "Room deleted"),
             @ApiResponse(responseCode = "404", description = "Room not found")
     })
-    public void deleteRoom(@PathVariable Long id) {
+    public void deleteRoom(@PathVariable @Positive Long id) {
         if (!roomRepository.existsById(id)) {
             throw new ResponseStatusException(NOT_FOUND, "Room not found");
         }

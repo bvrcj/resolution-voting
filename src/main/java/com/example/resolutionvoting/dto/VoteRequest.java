@@ -2,16 +2,21 @@ package com.example.resolutionvoting.dto;
 
 import com.example.resolutionvoting.model.VoteChoice;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 @Schema(name = "VoteRequest", description = "Payload to cast a vote.")
 public class VoteRequest {
 
     @NotNull
+    @Positive
     @Schema(example = "2")
     private Long voterId;
 
     @Schema(example = "null", description = "User id being represented by proxy (optional).")
+    @Positive
     private Long proxyForUserId;
 
     @NotNull
@@ -19,10 +24,14 @@ public class VoteRequest {
     private VoteChoice choice;
 
     @NotNull
+    @DecimalMin(value = "-90.0")
+    @DecimalMax(value = "90.0")
     @Schema(example = "12.9716", description = "Latitude of the voter location.")
     private Double latitude;
 
     @NotNull
+    @DecimalMin(value = "-180.0")
+    @DecimalMax(value = "180.0")
     @Schema(example = "77.5946", description = "Longitude of the voter location.")
     private Double longitude;
 
