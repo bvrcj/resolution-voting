@@ -6,6 +6,15 @@ Resolution voting application using Spring Boot and MySQL.
 - Build with `gradle clean build`
 - Start the app with `gradle bootRun`
 
+## Gradle tasks
+- `gradle tasks` list available tasks
+- `gradle bootRun` run the Spring Boot app
+- `gradle bootTestRun` run the app with test runtime classpath
+- `gradle test` run tests
+- `gradle jacocoTestReport` generate test coverage report (HTML/XML)
+- `gradle build` build and test
+- `gradle clean` clean build outputs
+
 ## API overview
 - `POST /api/rooms` create room
 - `GET /api/rooms` list rooms
