@@ -89,8 +89,8 @@ POST /api/users
 Request body:
 ```json
 {
-  "name": "Ada Lovelace",
-  "email": "ada@example.com",
+  "name": "Siva Vishnu",
+  "email": "SivaVishnu@lsvt.com",
   "role": "ADMIN"
 }
 ```
@@ -99,8 +99,8 @@ Response: 201 Created
 ```json
 {
   "id": 1,
-  "name": "Ada Lovelace",
-  "email": "ada@example.com",
+  "name": "Siva Vishnu",
+  "email": "SivaVishnu@lsvt.com",
   "role": "ADMIN"
 }
 ```
@@ -113,8 +113,8 @@ Response: 200 OK
 [
   {
     "id": 1,
-    "name": "Ada Lovelace",
-    "email": "ada@example.com",
+    "name": "Siva Vishnu",
+    "email": "SivaVishnu@lsvt.com",
     "role": "ADMIN"
   },
   {
@@ -133,8 +133,8 @@ Response: 200 OK
 ```json
 {
   "id": 1,
-  "name": "Ada Lovelace",
-  "email": "ada@example.com",
+  "name": "Siva Vishnu",
+  "email": "SivaVishnu@lsvt.com",
   "role": "ADMIN"
 }
 ```
@@ -475,3 +475,6 @@ Response: 200 OK
   }
 }
 ```
+
+
+

@@ -9,9 +9,9 @@ public class UserResponse {
 
     @Schema(example = "1")
     private Long id;
-    @Schema(example = "Ada Lovelace")
+    @Schema(example = "Siva Vishnu")
     private String name;
-    @Schema(example = "ada@example.com")
+    @Schema(example = "SivaVishnu@lsvt.com")
     private String email;
     @Schema(example = "ADMIN", description = "User role: ADMIN or USER.")
     private UserRole role;
@@ -43,4 +43,7 @@ public class UserResponse {
         return role;
     }
 }
+
+
+
 

@@ -10,12 +10,12 @@ import jakarta.validation.constraints.NotNull;
 public class CreateUserRequest {
 
     @NotBlank
-    @Schema(example = "Ada Lovelace")
+    @Schema(example = "Siva Vishnu")
     private String name;
 
     @Email
     @NotBlank
-    @Schema(example = "ada@example.com")
+    @Schema(example = "SivaVishnu@lsvt.com")
     private String email;
 
     @NotNull
@@ -46,4 +46,7 @@ public class CreateUserRequest {
         this.role = role;
     }
 }
+
+
+
 

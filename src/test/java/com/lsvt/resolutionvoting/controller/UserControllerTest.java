@@ -37,11 +37,11 @@ class UserControllerTest {
     void create_user_success() throws Exception {
         CreateUserRequest request = new CreateUserRequest();
         request.setName("Ada");
-        request.setEmail("ada@example.com");
+        request.setEmail("SivaVishnu@lsvt.com");
         request.setRole(UserRole.ADMIN);
 
-        when(userRepository.findByEmail("ada@example.com")).thenReturn(Optional.empty());
-        User saved = TestUtils.setId(new User("Ada", "ada@example.com", UserRole.ADMIN), 1L);
+        when(userRepository.findByEmail("SivaVishnu@lsvt.com")).thenReturn(Optional.empty());
+        User saved = TestUtils.setId(new User("Ada", "SivaVishnu@lsvt.com", UserRole.ADMIN), 1L);
         when(userRepository.save(org.mockito.ArgumentMatchers.any(User.class))).thenReturn(saved);
 
         mockMvc.perform(post("/api/users")
@@ -49,18 +49,18 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.email").value("ada@example.com"));
+                .andExpect(jsonPath("$.email").value("SivaVishnu@lsvt.com"));
     }
 
     @Test
     void create_user_duplicate_email() throws Exception {
         CreateUserRequest request = new CreateUserRequest();
         request.setName("Ada");
-        request.setEmail("ada@example.com");
+        request.setEmail("SivaVishnu@lsvt.com");
         request.setRole(UserRole.ADMIN);
 
-        when(userRepository.findByEmail("ada@example.com"))
-                .thenReturn(Optional.of(new User("Ada", "ada@example.com", UserRole.ADMIN)));
+        when(userRepository.findByEmail("SivaVishnu@lsvt.com"))
+                .thenReturn(Optional.of(new User("Ada", "SivaVishnu@lsvt.com", UserRole.ADMIN)));
 
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -91,7 +91,7 @@ class UserControllerTest {
     @Test
     void list_users() throws Exception {
         when(userRepository.findAll()).thenReturn(List.of(
-                TestUtils.setId(new User("Ada", "ada@example.com", UserRole.ADMIN), 1L)
+                TestUtils.setId(new User("Ada", "SivaVishnu@lsvt.com", UserRole.ADMIN), 1L)
         ));
 
         mockMvc.perform(get("/api/users"))
@@ -102,11 +102,11 @@ class UserControllerTest {
     @Test
     void get_user_success() throws Exception {
         when(userRepository.findById(1L))
-                .thenReturn(Optional.of(TestUtils.setId(new User("Ada", "ada@example.com", UserRole.ADMIN), 1L)));
+                .thenReturn(Optional.of(TestUtils.setId(new User("Ada", "SivaVishnu@lsvt.com", UserRole.ADMIN), 1L)));
 
         mockMvc.perform(get("/api/users/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("ada@example.com"));
+                .andExpect(jsonPath("$.email").value("SivaVishnu@lsvt.com"));
     }
 
     @Test
@@ -125,4 +125,6 @@ class UserControllerTest {
                 .andExpect(status().isNoContent());
     }
 }
+
+
 
