@@ -1,6 +1,7 @@
 package com.lsvt.resolutionvoting.controller;
 
 import com.lsvt.resolutionvoting.dto.CreateUserRequest;
+import com.lsvt.resolutionvoting.dto.UpdateUserRequest;
 import com.lsvt.resolutionvoting.dto.UserResponse;
 import com.lsvt.resolutionvoting.model.User;
 import com.lsvt.resolutionvoting.repository.UserRepository;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -77,6 +79,28 @@ public class UserController {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "User not found"));
         return UserResponse.from(user);
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update user", description = "Updates a user by id.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "User updated",
+                    content = @Content(schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input or email already exists"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public UserResponse updateUser(@PathVariable @Positive Long id, @Valid @RequestBody UpdateUserRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "User not found"));
+        userRepository.findByEmail(request.getEmail()).ifPresent(existing -> {
+            if (!existing.getId().equals(id)) {
+                throw new ResponseStatusException(BAD_REQUEST, "Email already exists");
+            }
+        });
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setRole(request.getRole());
+        return UserResponse.from(userRepository.save(user));
     }
 
     @DeleteMapping("/{id}")

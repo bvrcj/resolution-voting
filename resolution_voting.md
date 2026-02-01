@@ -44,8 +44,11 @@ Schema name: resolution_voting
 | resolution_id | BIGINT | NOT NULL | FK -> resolutions.id |
 | voter_id | BIGINT | NOT NULL | FK -> users.id |
 | proxy_for_user_id | BIGINT | | FK -> users.id |
+| proxy_for_name | VARCHAR(255) | | Optional proxy voter name |
 | effective_voter_id | BIGINT | NOT NULL | FK -> users.id |
 | choice | VARCHAR(255) | NOT NULL | Enum: FOR, AGAINST, ABSTAIN |
+| latitude | DOUBLE | NOT NULL | |
+| longitude | DOUBLE | NOT NULL | |
 | created_at | TIMESTAMP | NOT NULL | |
 
 ## Constraints
@@ -89,8 +92,11 @@ id BIGINT AUTO_INCREMENT PRIMARY KEY,
 resolution_id BIGINT NOT NULL,
 voter_id BIGINT NOT NULL,
 proxy_for_user_id BIGINT,
+proxy_for_name VARCHAR(255),
 effective_voter_id BIGINT NOT NULL,
 choice VARCHAR(255) NOT NULL, -- enum: FOR, AGAINST, ABSTAIN
+latitude DOUBLE NOT NULL,
+longitude DOUBLE NOT NULL,
 created_at TIMESTAMP NOT NULL,
 CONSTRAINT uq_votes_resolution_effective UNIQUE (resolution_id, effective_voter_id),
 CONSTRAINT fk_votes_resolution FOREIGN KEY (resolution_id) REFERENCES resolutions(id),
@@ -435,6 +441,7 @@ Request body:
 {
   "voterId": 2,
   "proxyForUserId": null,
+  "proxyForName": null,
   "choice": "FOR",
   "latitude": 12.9716,
   "longitude": 77.5946

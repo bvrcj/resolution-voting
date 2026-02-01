@@ -45,10 +45,18 @@ public class VoteService {
 
         User proxyFor = null;
         if (request.getProxyForUserId() != null) {
+            if (request.getProxyForUserId().equals(request.getVoterId())) {
+                throw new ResponseStatusException(BAD_REQUEST, "Proxy voter must be different from the voter");
+            }
             proxyFor = userRepository.findById(request.getProxyForUserId())
                     .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Proxy user not found"));
         }
         final User finalProxyFor = proxyFor;
+        if (finalProxyFor != null
+                && voter.getRole() == com.lsvt.resolutionvoting.model.UserRole.USER
+                && finalProxyFor.getRole() == com.lsvt.resolutionvoting.model.UserRole.ADMIN) {
+            throw new ResponseStatusException(BAD_REQUEST, "Proxy voting for admins is not allowed");
+        }
 
         if (resolution.getStatus() == ResolutionStatus.VOTING && finalProxyFor != null) {
             throw new ResponseStatusException(BAD_REQUEST, "Proxy voting is not active for this resolution");
@@ -77,10 +85,22 @@ public class VoteService {
                         );
                     }
                     existing.setChoice(request.getChoice());
+                    existing.setLatitude(request.getLatitude());
+                    existing.setLongitude(request.getLongitude());
+                    existing.setProxyForName(request.getProxyForName());
                     return voteRepository.save(existing);
                 })
                 .orElseGet(() -> voteRepository.save(
-                        new Vote(resolution, voter, finalProxyFor, effectiveVoter, request.getChoice())
+                        new Vote(
+                                resolution,
+                                voter,
+                                finalProxyFor,
+                                effectiveVoter,
+                                request.getChoice(),
+                                request.getLatitude(),
+                                request.getLongitude(),
+                                request.getProxyForName()
+                        )
                 ));
     }
 }

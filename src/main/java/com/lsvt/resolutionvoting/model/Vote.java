@@ -45,18 +45,39 @@ public class Vote {
     @Column(nullable = false)
     private VoteChoice choice;
 
+    @Column(nullable = false)
+    private Double latitude;
+
+    @Column(nullable = false)
+    private Double longitude;
+
+    @Column(name = "proxy_for_name")
+    private String proxyForName;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
     protected Vote() {
     }
 
-    public Vote(Resolution resolution, User voter, User proxyFor, User effectiveVoter, VoteChoice choice) {
+    public Vote(
+            Resolution resolution,
+            User voter,
+            User proxyFor,
+            User effectiveVoter,
+            VoteChoice choice,
+            Double latitude,
+            Double longitude,
+            String proxyForName
+    ) {
         this.resolution = resolution;
         this.voter = voter;
         this.proxyFor = proxyFor;
         this.effectiveVoter = effectiveVoter;
         this.choice = choice;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.proxyForName = proxyForName;
     }
 
     @PrePersist
@@ -90,6 +111,30 @@ public class Vote {
 
     public void setChoice(VoteChoice choice) {
         this.choice = choice;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public String getProxyForName() {
+        return proxyForName;
+    }
+
+    public void setProxyForName(String proxyForName) {
+        this.proxyForName = proxyForName;
     }
 
     public Instant getCreatedAt() {

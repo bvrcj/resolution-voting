@@ -133,12 +133,38 @@ class VoteServiceTest {
         Resolution resolution = buildResolution(ResolutionStatus.PROXY_VOTING);
         User voter = buildUser(2L);
         User proxyFor = buildUser(3L);
-        Vote existing = new Vote(resolution, voter, null, proxyFor, VoteChoice.FOR);
+        Vote existing = new Vote(resolution, voter, null, proxyFor, VoteChoice.FOR, 12.0, 77.0, null);
 
         when(resolutionRepository.findById(1L)).thenReturn(Optional.of(resolution));
         when(userRepository.findById(2L)).thenReturn(Optional.of(voter));
         when(userRepository.findById(3L)).thenReturn(Optional.of(proxyFor));
         when(voteRepository.findByResolutionIdAndEffectiveVoterId(1L, 3L)).thenReturn(Optional.of(existing));
+
+        VoteRequest request = buildRequest(3L);
+        assertThatThrownBy(() -> voteService.castVote(1L, request))
+                .isInstanceOf(ResponseStatusException.class);
+    }
+
+    @Test
+    void cast_proxy_vote_for_self_rejected() {
+        Resolution resolution = buildResolution(ResolutionStatus.PROXY_VOTING);
+        when(resolutionRepository.findById(1L)).thenReturn(Optional.of(resolution));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(buildUser(2L)));
+
+        VoteRequest request = buildRequest(2L);
+        assertThatThrownBy(() -> voteService.castVote(1L, request))
+                .isInstanceOf(ResponseStatusException.class);
+    }
+
+    @Test
+    void cast_proxy_vote_for_admin_rejected_for_user() {
+        Resolution resolution = buildResolution(ResolutionStatus.PROXY_VOTING);
+        User voter = buildUser(2L, UserRole.USER);
+        User proxyFor = buildUser(3L, UserRole.ADMIN);
+
+        when(resolutionRepository.findById(1L)).thenReturn(Optional.of(resolution));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(voter));
+        when(userRepository.findById(3L)).thenReturn(Optional.of(proxyFor));
 
         VoteRequest request = buildRequest(3L);
         assertThatThrownBy(() -> voteService.castVote(1L, request))
@@ -166,7 +192,7 @@ class VoteServiceTest {
     void cast_vote_updates_existing() {
         Resolution resolution = buildResolution(ResolutionStatus.VOTING);
         User voter = buildUser(2L);
-        Vote existing = new Vote(resolution, voter, null, voter, VoteChoice.AGAINST);
+        Vote existing = new Vote(resolution, voter, null, voter, VoteChoice.AGAINST, 12.0, 77.0, null);
 
         when(resolutionRepository.findById(1L)).thenReturn(Optional.of(resolution));
         when(userRepository.findById(2L)).thenReturn(Optional.of(voter));
@@ -185,7 +211,7 @@ class VoteServiceTest {
         Resolution resolution = buildResolution(ResolutionStatus.PROXY_VOTING);
         User voter = buildUser(2L);
         User proxyFor = buildUser(3L);
-        Vote existing = new Vote(resolution, voter, proxyFor, proxyFor, VoteChoice.AGAINST);
+        Vote existing = new Vote(resolution, voter, proxyFor, proxyFor, VoteChoice.AGAINST, 12.0, 77.0, null);
 
         when(resolutionRepository.findById(1L)).thenReturn(Optional.of(resolution));
         when(userRepository.findById(2L)).thenReturn(Optional.of(voter));
@@ -217,7 +243,11 @@ class VoteServiceTest {
     }
 
     private User buildUser(Long id) {
-        User user = new User("User", "user" + id + "@example.com", UserRole.USER);
+        return buildUser(id, UserRole.USER);
+    }
+
+    private User buildUser(Long id, UserRole role) {
+        User user = new User("User", "user" + id + "@example.com", role);
         return com.lsvt.resolutionvoting.TestUtils.setId(user, id);
     }
 }

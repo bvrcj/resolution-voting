@@ -19,6 +19,9 @@ public class VoteRequest {
     @Positive
     private Long proxyForUserId;
 
+    @Schema(example = "Alex Morgan", description = "Proxy voter name (optional).")
+    private String proxyForName;
+
     @NotNull
     @Schema(example = "FOR", description = "Vote choice: FOR, AGAINST, ABSTAIN.")
     private VoteChoice choice;
@@ -57,6 +60,14 @@ public class VoteRequest {
 
     public void setChoice(VoteChoice choice) {
         this.choice = choice;
+    }
+
+    public String getProxyForName() {
+        return proxyForName;
+    }
+
+    public void setProxyForName(String proxyForName) {
+        this.proxyForName = proxyForName;
     }
 
     public Double getLatitude() {

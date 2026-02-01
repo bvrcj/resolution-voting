@@ -340,6 +340,7 @@ Request body:
 {
   "voterId": 2,
   "proxyForUserId": null,
+  "proxyForName": null,
   "choice": "FOR",
   "latitude": 12.9716,
   "longitude": 77.5946

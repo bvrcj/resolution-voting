@@ -22,6 +22,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.server.ResponseStatusException;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -338,13 +340,37 @@ class ResolutionControllerTest {
                         null,
                         new com.lsvt.resolutionvoting.model.User("User", "user@example.com",
                                 com.lsvt.resolutionvoting.model.UserRole.USER),
-                        com.lsvt.resolutionvoting.model.VoteChoice.FOR
+                        com.lsvt.resolutionvoting.model.VoteChoice.FOR,
+                        12.0,
+                        77.0,
+                        null
                 ));
 
         mockMvc.perform(post("/api/resolutions/10/votes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
+    }
+
+    @Test
+    void cast_vote_location_mismatch_from_service() throws Exception {
+        VoteRequest request = new VoteRequest();
+        request.setVoterId(1L);
+        request.setChoice(VoteChoice.FOR);
+        request.setLatitude(12.0);
+        request.setLongitude(77.0);
+
+        when(voteService.castVote(eq(10L), any(VoteRequest.class)))
+                .thenThrow(new ResponseStatusException(
+                        BAD_REQUEST,
+                        "Voting location does not match the resolution room"
+                ));
+
+        mockMvc.perform(post("/api/resolutions/10/votes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Voting location does not match the resolution room"));
     }
 
     @Test

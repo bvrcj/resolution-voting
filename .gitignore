@@ -5,6 +5,11 @@ build/classes/
 build/tmp/
 **/build/
 
+# Frontend
+node_modules/
+frontend/.next/
+frontend/out/
+
 # IntelliJ IDEA
 .idea/
 *.iml

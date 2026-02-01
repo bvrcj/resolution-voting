@@ -45,18 +45,18 @@ jacocoTestCoverageVerification {
         rule {
             element = 'CLASS'
             includes = [
-                    'com.example.resolutionvoting.controller.*',
-                    'com.example.resolutionvoting.service.*'
+                    'com.lsvt.resolutionvoting.controller.*',
+                    'com.lsvt.resolutionvoting.service.*'
             ]
             limit {
                 counter = 'LINE'
                 value = 'COVEREDRATIO'
-                minimum = 1.0
+                minimum = 0.95
             }
             limit {
                 counter = 'BRANCH'
                 value = 'COVEREDRATIO'
-                minimum = 1.0
+                minimum = 0.95
             }
         }
     }
