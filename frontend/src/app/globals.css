@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --temple-gold: #d08b3e;
+  --temple-maroon: #4a2417;
+  --temple-cream: #f7f1e7;
+  --temple-ink: #141416;
+  --temple-mist: #f3ede4;
+  --temple-slate: #55606e;
+  --header-height: 72px;
+  --footer-height: 120px;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  color: var(--temple-ink);
+  background-image:
+    radial-gradient(900px circle at 10% 10%, rgba(208, 139, 62, 0.18), transparent 60%),
+    radial-gradient(800px circle at 90% 0%, rgba(90, 113, 160, 0.16), transparent 55%),
+    linear-gradient(180deg, #f9f6f1 0%, #f2e8dc 55%, #ece0cf 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  font-feature-settings: "ss01" 1, "ss02" 1, "cv11" 1;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+@layer base {
+  input,
+  select,
+  textarea {
+    border-radius: 0.85rem;
+    border-color: rgba(148, 163, 184, 0.45);
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: 2px solid rgba(208, 139, 62, 0.3);
+    outline-offset: 1px;
+  }
+}
+
+.temple-glass {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.68));
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px);
+}
+
+.temple-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  height: var(--header-height);
+  background: #f58220;
+  box-shadow: 0 12px 24px rgba(42, 20, 6, 0.2);
+}
+
+.temple-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  height: var(--footer-height);
+  background: #2f3193;
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.main-scroll {
+  height: 100vh;
+  overflow-y: auto;
+  padding-top: var(--header-height);
+  padding-bottom: var(--footer-height);
+}
+
+.social-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #b8682f;
+  font-weight: 700;
+  text-transform: uppercase;
+}
