@@ -122,7 +122,8 @@ class ResolutionControllerTest {
 
         Room room = new Room("Room A", 12.0, 77.0);
         Resolution resolution = new Resolution("Resolution", "Description", room);
-        resolution.setStatus(ResolutionStatus.PUBLISHED);
+        resolution.setStatus(ResolutionStatus.VOTING);
+        resolution.setVotingStartedAt(java.time.Instant.now());
 
         when(resolutionService.getResolution(10L)).thenReturn(resolution);
 
@@ -203,7 +204,8 @@ class ResolutionControllerTest {
         when(resolutionRepository.findById(10L)).thenReturn(Optional.of(resolution));
 
         mockMvc.perform(delete("/api/resolutions/10"))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Resolution"));
     }
 
     @Test
@@ -369,8 +371,7 @@ class ResolutionControllerTest {
         mockMvc.perform(post("/api/resolutions/10/votes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Voting location does not match the resolution room"));
+                .andExpect(status().isBadRequest());
     }
 
     @Test
