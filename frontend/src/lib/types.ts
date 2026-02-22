@@ -18,6 +18,13 @@ export type Resolution = {
   description: string;
   status: string;
   room: Room;
+  createdAt: string;
+  updatedAt: string;
+  publishAt: string | null;
+  votingStartAt: string | null;
+  votingEndAt: string | null;
+  votingStartedAt: string | null;
+  votingEndedAt: string | null;
 };
 
 export type VoteBreakdown = {
@@ -39,4 +46,9 @@ export type Results = {
   abstainCount: number;
   directVotes: VoteBreakdown;
   proxyVotes: VoteBreakdown;
+};
+
+export type LiveResolution = {
+  resolution: Resolution;
+  liveResults: Results | null;
 };

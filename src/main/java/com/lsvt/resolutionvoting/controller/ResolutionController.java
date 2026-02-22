@@ -1,6 +1,7 @@
 package com.lsvt.resolutionvoting.controller;
 
 import com.lsvt.resolutionvoting.dto.CreateResolutionRequest;
+import com.lsvt.resolutionvoting.dto.LiveResolutionResponse;
 import com.lsvt.resolutionvoting.dto.ResolutionResponse;
 import com.lsvt.resolutionvoting.dto.ResolutionResultsResponse;
 import com.lsvt.resolutionvoting.dto.UpdateResolutionRequest;
@@ -21,6 +22,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import java.time.Instant;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -69,9 +71,13 @@ public class ResolutionController {
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
     public ResolutionResponse createResolution(@Valid @RequestBody CreateResolutionRequest request) {
+        validateSchedule(request.getPublishAt(), request.getVotingStartAt(), request.getVotingEndAt());
         Room room = roomRepository.findById(request.getRoomId())
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Room not found"));
         Resolution resolution = new Resolution(request.getTitle(), request.getDescription(), room);
+        resolution.setPublishAt(request.getPublishAt());
+        resolution.setVotingStartAt(request.getVotingStartAt());
+        resolution.setVotingEndAt(request.getVotingEndAt());
         return ResolutionResponse.from(resolutionRepository.save(resolution));
     }
 
@@ -85,7 +91,7 @@ public class ResolutionController {
         return resolutionRepository.findAll().stream().map(ResolutionResponse::from).toList();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:[0-9]+}")
     @Operation(summary = "Get resolution", description = "Returns a resolution by id.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Resolution found",
@@ -96,48 +102,58 @@ public class ResolutionController {
         return ResolutionResponse.from(resolutionService.getResolution(id));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id:[0-9]+}")
     @Operation(summary = "Update resolution", description = "Updates a DRAFT resolution.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Resolution updated",
                     content = @Content(schema = @Schema(implementation = ResolutionResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Only DRAFT resolutions can be updated"),
+            @ApiResponse(responseCode = "400", description = "Resolution can be updated only before voting starts"),
             @ApiResponse(responseCode = "404", description = "Resolution not found")
     })
     public ResolutionResponse updateResolution(
             @PathVariable @Positive Long id,
             @Valid @RequestBody UpdateResolutionRequest request
     ) {
+        validateSchedule(request.getPublishAt(), request.getVotingStartAt(), request.getVotingEndAt());
         Resolution resolution = resolutionService.getResolution(id);
-        if (resolution.getStatus() != ResolutionStatus.DRAFT) {
-            throw new ResponseStatusException(BAD_REQUEST, "Only draft resolutions can be updated");
+        if (resolution.getStatus() == ResolutionStatus.VOTING
+                || resolution.getStatus() == ResolutionStatus.PROXY_VOTING
+                || resolution.getStatus() == ResolutionStatus.CLOSED
+                || resolution.getStatus() == ResolutionStatus.RESULTS_PUBLISHED
+                || resolution.getVotingStartedAt() != null) {
+            throw new ResponseStatusException(BAD_REQUEST, "Resolution can be updated only before voting starts");
         }
         Room room = roomRepository.findById(request.getRoomId())
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Room not found"));
         resolution.setTitle(request.getTitle());
         resolution.setDescription(request.getDescription());
         resolution.setRoom(room);
+        resolution.setPublishAt(request.getPublishAt());
+        resolution.setVotingStartAt(request.getVotingStartAt());
+        resolution.setVotingEndAt(request.getVotingEndAt());
         return ResolutionResponse.from(resolutionRepository.save(resolution));
     }
 
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{id:[0-9]+}")
     @Operation(summary = "Delete resolution", description = "Deletes a DRAFT resolution.")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Resolution deleted"),
+            @ApiResponse(responseCode = "200", description = "Resolution deleted",
+                    content = @Content(schema = @Schema(implementation = ResolutionResponse.class))),
             @ApiResponse(responseCode = "400", description = "Only DRAFT resolutions can be deleted"),
             @ApiResponse(responseCode = "404", description = "Resolution not found")
     })
-    public void deleteResolution(@PathVariable @Positive Long id) {
+    public ResolutionResponse deleteResolution(@PathVariable @Positive Long id) {
         Resolution resolution = resolutionRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Resolution not found"));
         if (resolution.getStatus() != ResolutionStatus.DRAFT) {
             throw new ResponseStatusException(BAD_REQUEST, "Only draft resolutions can be deleted");
         }
+        ResolutionResponse response = ResolutionResponse.from(resolution);
         resolutionRepository.delete(resolution);
+        return response;
     }
 
-    @PostMapping("/{id}/publish")
+    @PostMapping("/{id:[0-9]+}/publish")
     @Operation(summary = "Publish resolution", description = "Moves a resolution to PUBLISHED status.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Resolution published",
@@ -149,7 +165,7 @@ public class ResolutionController {
         return ResolutionResponse.from(resolutionService.publish(id));
     }
 
-    @PostMapping("/{id}/start-voting")
+    @PostMapping("/{id:[0-9]+}/start-voting")
     @Operation(summary = "Start direct voting", description = "Moves a resolution to VOTING status.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Voting started",
@@ -161,7 +177,7 @@ public class ResolutionController {
         return ResolutionResponse.from(resolutionService.startVoting(id));
     }
 
-    @PostMapping("/{id}/end-direct-voting")
+    @PostMapping("/{id:[0-9]+}/end-direct-voting")
     @Operation(summary = "End direct voting", description = "Moves a resolution to PROXY_VOTING status.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Direct voting ended",
@@ -173,7 +189,7 @@ public class ResolutionController {
         return ResolutionResponse.from(resolutionService.endDirectVoting(id));
     }
 
-    @PostMapping("/{id}/start-proxy-voting")
+    @PostMapping("/{id:[0-9]+}/start-proxy-voting")
     @Operation(summary = "Start proxy voting", description = "Moves a resolution to PROXY_VOTING status.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Proxy voting started",
@@ -185,7 +201,7 @@ public class ResolutionController {
         return ResolutionResponse.from(resolutionService.startProxyVoting(id));
     }
 
-    @PostMapping("/{id}/end-proxy-voting")
+    @PostMapping("/{id:[0-9]+}/end-proxy-voting")
     @Operation(summary = "End proxy voting", description = "Closes voting and returns aggregated results.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Voting ended",
@@ -198,7 +214,7 @@ public class ResolutionController {
         return resolutionService.results(id);
     }
 
-    @PostMapping("/{id}/publish-results")
+    @PostMapping("/{id:[0-9]+}/publish-results")
     @Operation(summary = "Publish results", description = "Marks results as published after voting ends.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Results published",
@@ -211,7 +227,7 @@ public class ResolutionController {
         return resolutionService.results(id);
     }
 
-    @PostMapping("/{id}/votes")
+    @PostMapping("/{id:[0-9]+}/votes")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
             summary = "Cast vote",
@@ -228,7 +244,7 @@ public class ResolutionController {
         voteService.castVote(id, request);
     }
 
-    @GetMapping("/{id}/results")
+    @GetMapping("/{id:[0-9]+}/results")
     @Operation(summary = "Get results", description = "Returns aggregated results for a resolution.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Results returned",
@@ -237,6 +253,36 @@ public class ResolutionController {
     })
     public ResolutionResultsResponse results(@PathVariable @Positive Long id) {
         return resolutionService.results(id);
+    }
+
+    @GetMapping("/{id:[0-9]+}/live-results")
+    @Operation(summary = "Get live results", description = "Returns live vote totals during voting.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Live results returned",
+                    content = @Content(schema = @Schema(implementation = ResolutionResultsResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Resolution not found")
+    })
+    public ResolutionResultsResponse liveResults(@PathVariable @Positive Long id) {
+        return resolutionService.liveResults(id);
+    }
+
+    @GetMapping("/live-dashboard")
+    @Operation(summary = "Live dashboard", description = "Returns resolutions with live vote counts for active sessions.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Live dashboard returned",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = LiveResolutionResponse.class))))
+    })
+    public List<LiveResolutionResponse> liveDashboard() {
+        return resolutionService.liveDashboard();
+    }
+
+    private void validateSchedule(Instant publishAt, Instant votingStartAt, Instant votingEndAt) {
+        if (votingStartAt != null && votingEndAt != null && votingEndAt.isBefore(votingStartAt)) {
+            throw new ResponseStatusException(BAD_REQUEST, "Voting end must be after voting start");
+        }
+        if (publishAt != null && votingStartAt != null && votingStartAt.isBefore(publishAt)) {
+            throw new ResponseStatusException(BAD_REQUEST, "Voting start must be after publish date");
+        }
     }
 }
 

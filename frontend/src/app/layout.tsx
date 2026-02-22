@@ -10,7 +10,7 @@ const barlow = localFont({
 });
 
 export const metadata = {
-  title: "Resolution Voting",
+  title: "|| Om Namah Shivaya || Om Namo Narayanaya ||",
   description: "Rooms, resolutions, and voting dashboard",
   icons: {
     icon: "/img.png"

@@ -4,11 +4,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { TouchEvent } from "react";
 import { useRouter } from "next/navigation";
 import ApiBaseField from "@/components/common/ApiBaseField";
+import LiveClock from "@/components/common/LiveClock";
 import SectionCard from "@/components/common/SectionCard";
 import AdminResultsPanel from "@/components/admin/AdminResultsPanel";
 import AdminVoteCard from "@/components/admin/AdminVoteCard";
 import SidebarNav from "@/components/layout/SidebarNav";
 import type { Resolution, Results, Room, User } from "@/lib/types";
+import { formatDateTime } from "@/lib/date";
 
 const API_DEFAULT = "http://localhost:8080";
 const ROOM_PAGE_SIZE = 5;
@@ -33,6 +35,9 @@ type ResolutionForm = {
   title: string;
   description: string;
   roomId: string;
+  publishAt: string;
+  votingStartAt: string;
+  votingEndAt: string;
 };
 
 type VoteForm = {
@@ -109,7 +114,10 @@ export default function AdminPage() {
   const [resolutionForm, setResolutionForm] = useState<ResolutionForm>({
     title: "",
     description: "",
-    roomId: ""
+    roomId: "",
+    publishAt: "",
+    votingStartAt: "",
+    votingEndAt: ""
   });
   const [editingResolutionId, setEditingResolutionId] = useState<number | null>(null);
   const [resolutionPage, setResolutionPage] = useState(1);
@@ -345,19 +353,31 @@ export default function AdminPage() {
       const endpoint = editingResolutionId
         ? `${apiBase}/api/resolutions/${editingResolutionId}`
         : `${apiBase}/api/resolutions`;
+
+      const toIso = (value: string) => (value ? new Date(value).toISOString() : null);
       const response = await fetch(endpoint, {
         method: editingResolutionId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: resolutionForm.title,
           description: resolutionForm.description,
-          roomId: Number(resolutionForm.roomId)
+          roomId: Number(resolutionForm.roomId),
+          publishAt: toIso(resolutionForm.publishAt),
+          votingStartAt: toIso(resolutionForm.votingStartAt),
+          votingEndAt: toIso(resolutionForm.votingEndAt)
         })
       });
       if (!response.ok) {
         throw new Error(editingResolutionId ? "Failed to update resolution" : "Failed to create resolution");
       }
-      setResolutionForm({ title: "", description: "", roomId: "" });
+      setResolutionForm({
+        title: "",
+        description: "",
+        roomId: "",
+        publishAt: "",
+        votingStartAt: "",
+        votingEndAt: ""
+      });
       setEditingResolutionId(null);
       await refreshData();
       setActionStatus({
@@ -371,16 +391,39 @@ export default function AdminPage() {
   };
 
   const editResolution = (resolution: Resolution) => {
+    const toInput = (value?: string | null) => {
+      if (!value) {
+        return "";
+      }
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        return "";
+      }
+      const pad = (num: number) => String(num).padStart(2, "0");
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
+        date.getHours()
+      )}:${pad(date.getMinutes())}`;
+    };
     setResolutionForm({
       title: resolution.title,
       description: resolution.description,
-      roomId: String(resolution.room?.id ?? "")
+      roomId: String(resolution.room?.id ?? ""),
+      publishAt: toInput(resolution.publishAt),
+      votingStartAt: toInput(resolution.votingStartAt),
+      votingEndAt: toInput(resolution.votingEndAt)
     });
     setEditingResolutionId(resolution.id);
   };
 
   const cancelResolutionEdit = () => {
-    setResolutionForm({ title: "", description: "", roomId: "" });
+    setResolutionForm({
+      title: "",
+      description: "",
+      roomId: "",
+      publishAt: "",
+      votingStartAt: "",
+      votingEndAt: ""
+    });
     setEditingResolutionId(null);
   };
 
@@ -633,6 +676,7 @@ export default function AdminPage() {
                     setActivePanel(id);
                     closeSidebar();
                   }}
+                  onClose={closeSidebar}
                 >
                   {currentUser && (
                     <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-xs text-amber-100">
@@ -651,6 +695,9 @@ export default function AdminPage() {
                 {error}
               </p>
             )}
+            <div className="flex items-center justify-between">
+              <LiveClock label="Admin Live" />
+            </div>
             <div className="flex items-center justify-between lg:hidden">
               <p className="text-xs uppercase tracking-[0.3em] text-amber-700">Admin</p>
               <button
@@ -676,6 +723,15 @@ export default function AdminPage() {
                           </h3>
                           <p className="mt-2 text-sm text-slate-600">{resolution.description}</p>
                           <p className="mt-3 text-xs text-slate-500">Room: {resolution.room?.name}</p>
+                          <div className="mt-3 grid gap-1 text-[11px] text-slate-500">
+                            <span>Created: {formatDateTime(resolution.createdAt)}</span>
+                            <span>Updated: {formatDateTime(resolution.updatedAt)}</span>
+                            <span>Publish At: {formatDateTime(resolution.publishAt)}</span>
+                            <span>Scheduled Start: {formatDateTime(resolution.votingStartAt)}</span>
+                            <span>Scheduled End: {formatDateTime(resolution.votingEndAt)}</span>
+                            <span>Voting Start: {formatDateTime(resolution.votingStartedAt)}</span>
+                            <span>Voting End: {formatDateTime(resolution.votingEndedAt)}</span>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -695,6 +751,15 @@ export default function AdminPage() {
                           </h3>
                           <p className="mt-2 text-sm text-slate-600">{resolution.description}</p>
                           <p className="mt-3 text-xs text-slate-500">Room: {resolution.room?.name}</p>
+                          <div className="mt-3 grid gap-1 text-[11px] text-slate-500">
+                            <span>Created: {formatDateTime(resolution.createdAt)}</span>
+                            <span>Updated: {formatDateTime(resolution.updatedAt)}</span>
+                            <span>Publish At: {formatDateTime(resolution.publishAt)}</span>
+                            <span>Scheduled Start: {formatDateTime(resolution.votingStartAt)}</span>
+                            <span>Scheduled End: {formatDateTime(resolution.votingEndAt)}</span>
+                            <span>Voting Start: {formatDateTime(resolution.votingStartedAt)}</span>
+                            <span>Voting End: {formatDateTime(resolution.votingEndedAt)}</span>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -714,6 +779,15 @@ export default function AdminPage() {
                           </h3>
                           <p className="mt-2 text-sm text-slate-600">{resolution.description}</p>
                           <p className="mt-3 text-xs text-slate-500">Room: {resolution.room?.name}</p>
+                          <div className="mt-3 grid gap-1 text-[11px] text-slate-500">
+                            <span>Created: {formatDateTime(resolution.createdAt)}</span>
+                            <span>Updated: {formatDateTime(resolution.updatedAt)}</span>
+                            <span>Publish At: {formatDateTime(resolution.publishAt)}</span>
+                            <span>Scheduled Start: {formatDateTime(resolution.votingStartAt)}</span>
+                            <span>Scheduled End: {formatDateTime(resolution.votingEndAt)}</span>
+                            <span>Voting Start: {formatDateTime(resolution.votingStartedAt)}</span>
+                            <span>Voting End: {formatDateTime(resolution.votingEndedAt)}</span>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -818,33 +892,80 @@ export default function AdminPage() {
                 <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
                 <SectionCard title={editingResolutionId ? "Edit Resolution" : "Create Resolution"}>
                   <div className="space-y-3 text-sm">
-                    <input
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2"
-                      placeholder="Title"
-                      value={resolutionForm.title}
-                      onChange={(event) => setResolutionForm({ ...resolutionForm, title: event.target.value })}
-                    />
-                    <textarea
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2"
-                      placeholder="Description"
-                      rows={3}
-                      value={resolutionForm.description}
-                      onChange={(event) =>
-                        setResolutionForm({ ...resolutionForm, description: event.target.value })
-                      }
-                    />
-                    <select
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2"
-                      value={resolutionForm.roomId}
-                      onChange={(event) => setResolutionForm({ ...resolutionForm, roomId: event.target.value })}
-                    >
-                      <option value="">Select room</option>
-                      {rooms.map((room) => (
-                        <option key={room.id} value={room.id}>
-                          {room.name}
-                        </option>
-                      ))}
-                    </select>
+                    <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Title
+                      <input
+                        className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2"
+                        placeholder="Title"
+                        value={resolutionForm.title}
+                        onChange={(event) => setResolutionForm({ ...resolutionForm, title: event.target.value })}
+                      />
+                    </label>
+                    <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Description
+                      <textarea
+                        className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2"
+                        placeholder="Description"
+                        rows={3}
+                        value={resolutionForm.description}
+                        onChange={(event) =>
+                          setResolutionForm({ ...resolutionForm, description: event.target.value })
+                        }
+                      />
+                    </label>
+                    <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Room
+                      <select
+                        className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2"
+                        value={resolutionForm.roomId}
+                        onChange={(event) =>
+                          setResolutionForm({ ...resolutionForm, roomId: event.target.value })
+                        }
+                      >
+                        <option value="">Select room</option>
+                        {rooms.map((room) => (
+                          <option key={room.id} value={room.id}>
+                            {room.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Publish Date/Time
+                      <input
+                        type="datetime-local"
+                        className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2"
+                        placeholder="Publish date/time"
+                        value={resolutionForm.publishAt}
+                        onChange={(event) =>
+                          setResolutionForm({ ...resolutionForm, publishAt: event.target.value })
+                        }
+                      />
+                    </label>
+                    <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Voting Start Date/Time
+                      <input
+                        type="datetime-local"
+                        className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2"
+                        placeholder="Voting start date/time"
+                        value={resolutionForm.votingStartAt}
+                        onChange={(event) =>
+                          setResolutionForm({ ...resolutionForm, votingStartAt: event.target.value })
+                        }
+                      />
+                    </label>
+                    <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Voting End Date/Time
+                      <input
+                        type="datetime-local"
+                        className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2"
+                        placeholder="Voting end date/time"
+                        value={resolutionForm.votingEndAt}
+                        onChange={(event) =>
+                          setResolutionForm({ ...resolutionForm, votingEndAt: event.target.value })
+                        }
+                      />
+                    </label>
                     <button
                       onClick={submitResolution}
                       disabled={!resolutionForm.roomId}
@@ -880,8 +1001,17 @@ export default function AdminPage() {
                           </h3>
                           <p className="mt-2 text-sm text-slate-600">{resolution.description}</p>
                           <p className="mt-3 text-xs text-slate-500">Room: {resolution.room?.name}</p>
+                          <div className="mt-3 grid gap-1 text-[11px] text-slate-500">
+                            <span>Created: {formatDateTime(resolution.createdAt)}</span>
+                            <span>Updated: {formatDateTime(resolution.updatedAt)}</span>
+                            <span>Publish At: {formatDateTime(resolution.publishAt)}</span>
+                            <span>Scheduled Start: {formatDateTime(resolution.votingStartAt)}</span>
+                            <span>Scheduled End: {formatDateTime(resolution.votingEndAt)}</span>
+                            <span>Voting Start: {formatDateTime(resolution.votingStartedAt)}</span>
+                            <span>Voting End: {formatDateTime(resolution.votingEndedAt)}</span>
+                          </div>
                           <div className="mt-4 flex flex-wrap gap-2 text-xs">
-                            {resolution.status === "DRAFT" && (
+                            {(resolution.status === "DRAFT" || resolution.status === "PUBLISHED") && (
                               <>
                                 <button
                                   type="button"
@@ -890,20 +1020,24 @@ export default function AdminPage() {
                                 >
                                   Edit
                                 </button>
-                                <button
-                                  type="button"
-                                  onClick={() => deleteResolution(resolution.id)}
-                                  className="rounded-full bg-rose-100 px-3 py-1 text-rose-700"
-                                >
-                                  Delete
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => updateResolutionStatus(resolution.id, "publish")}
-                                  className="rounded-full bg-amber-100 px-3 py-1 text-amber-800"
-                                >
-                                  Publish
-                                </button>
+                                {resolution.status === "DRAFT" && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => deleteResolution(resolution.id)}
+                                      className="rounded-full bg-rose-100 px-3 py-1 text-rose-700"
+                                    >
+                                      Delete
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => updateResolutionStatus(resolution.id, "publish")}
+                                      className="rounded-full bg-amber-100 px-3 py-1 text-amber-800"
+                                    >
+                                      Publish
+                                    </button>
+                                  </>
+                                )}
                               </>
                             )}
                             {resolution.status === "PUBLISHED" && (

@@ -13,6 +13,8 @@ type SidebarNavProps = {
   activeId: string;
   onSelect: (id: string) => void;
   children?: ReactNode;
+  onClose?: () => void;
+  closeLabel?: string;
 };
 
 export default function SidebarNav({
@@ -21,10 +23,21 @@ export default function SidebarNav({
   items,
   activeId,
   onSelect,
-  children
+  children,
+  onClose,
+  closeLabel = "Move --> Left menu"
 }: SidebarNavProps) {
   return (
     <aside className="temple-glass rounded-3xl p-6 text-slate-900 shadow-xl">
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          className="mb-4 w-full rounded-2xl border border-amber-200 bg-white/70 px-4 py-2 text-left text-xs font-semibold uppercase tracking-[0.3em] text-amber-800 transition hover:bg-amber-50"
+        >
+          {closeLabel}
+        </button>
+      )}
       <div>
         <p className="text-xs uppercase tracking-[0.35em] text-amber-700">Console</p>
         <h2 className="mt-3 text-2xl font-semibold font-display">{title}</h2>

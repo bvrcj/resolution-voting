@@ -4,12 +4,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { TouchEvent } from "react";
 import { useRouter } from "next/navigation";
 import ApiBaseField from "@/components/common/ApiBaseField";
+import LiveClock from "@/components/common/LiveClock";
 import SectionCard from "@/components/common/SectionCard";
 import SidebarNav from "@/components/layout/SidebarNav";
 import UserResolutionList from "@/components/user/UserResolutionList";
 import UserResultsPanel from "@/components/user/UserResultsPanel";
 import UserVoteCard from "@/components/user/UserVoteCard";
 import type { Resolution, Results, User } from "@/lib/types";
+import { formatDateTime } from "@/lib/date";
 
 const API_DEFAULT = "http://localhost:8080";
 
@@ -323,6 +325,7 @@ export default function UserPage() {
                     setActivePanel(id);
                     closeSidebar();
                   }}
+                  onClose={closeSidebar}
                 >
                   {currentUser && (
                     <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-xs text-amber-100">
@@ -341,6 +344,9 @@ export default function UserPage() {
                 {error}
               </p>
             )}
+            <div className="flex items-center justify-between">
+              <LiveClock label="User Live" />
+            </div>
             <div className="flex items-center justify-between lg:hidden">
               <p className="text-xs uppercase tracking-[0.3em] text-amber-700">User</p>
               <button
@@ -366,6 +372,12 @@ export default function UserPage() {
                           </h3>
                           <p className="mt-2 text-sm text-slate-600">{resolution.description}</p>
                           <p className="mt-3 text-xs text-slate-500">Room: {resolution.room?.name}</p>
+                          <div className="mt-3 grid gap-1 text-[11px] text-slate-500">
+                            <span>Created: {formatDateTime(resolution.createdAt)}</span>
+                            <span>Updated: {formatDateTime(resolution.updatedAt)}</span>
+                            <span>Voting Start: {formatDateTime(resolution.votingStartedAt)}</span>
+                            <span>Voting End: {formatDateTime(resolution.votingEndedAt)}</span>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -385,6 +397,12 @@ export default function UserPage() {
                           </h3>
                           <p className="mt-2 text-sm text-slate-600">{resolution.description}</p>
                           <p className="mt-3 text-xs text-slate-500">Room: {resolution.room?.name}</p>
+                          <div className="mt-3 grid gap-1 text-[11px] text-slate-500">
+                            <span>Created: {formatDateTime(resolution.createdAt)}</span>
+                            <span>Updated: {formatDateTime(resolution.updatedAt)}</span>
+                            <span>Voting Start: {formatDateTime(resolution.votingStartedAt)}</span>
+                            <span>Voting End: {formatDateTime(resolution.votingEndedAt)}</span>
+                          </div>
                         </div>
                       ))}
                     </div>

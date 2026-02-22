@@ -2,12 +2,15 @@ package com.lsvt.resolutionvoting.service;
 
 import com.lsvt.resolutionvoting.dto.ResolutionResultsResponse;
 import com.lsvt.resolutionvoting.dto.RoomResponse;
+import com.lsvt.resolutionvoting.dto.LiveResolutionResponse;
 import com.lsvt.resolutionvoting.model.Resolution;
 import com.lsvt.resolutionvoting.model.ResolutionStatus;
 import com.lsvt.resolutionvoting.model.VoteChoice;
 import com.lsvt.resolutionvoting.repository.ResolutionRepository;
 import com.lsvt.resolutionvoting.repository.VoteRepository;
 import java.time.Instant;
+import java.util.EnumSet;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -99,6 +102,36 @@ public class ResolutionService {
                 && resolution.getStatus() != ResolutionStatus.RESULTS_PUBLISHED) {
             throw new ResponseStatusException(BAD_REQUEST, "Results are available after voting is closed");
         }
+        return buildResultsResponse(resolution);
+    }
+
+    @Transactional(readOnly = true)
+    public ResolutionResultsResponse liveResults(Long id) {
+        Resolution resolution = getResolution(id);
+        return buildResultsResponse(resolution);
+    }
+
+    @Transactional(readOnly = true)
+    public List<LiveResolutionResponse> liveDashboard() {
+        EnumSet<ResolutionStatus> liveStatuses = EnumSet.of(
+                ResolutionStatus.VOTING,
+                ResolutionStatus.PROXY_VOTING
+        );
+        return resolutionRepository.findAll().stream()
+                .map(resolution -> {
+                    ResolutionResultsResponse results = liveStatuses.contains(resolution.getStatus())
+                            ? buildResultsResponse(resolution)
+                            : null;
+                    return new LiveResolutionResponse(
+                            com.lsvt.resolutionvoting.dto.ResolutionResponse.from(resolution),
+                            results
+                    );
+                })
+                .toList();
+    }
+
+    private ResolutionResultsResponse buildResultsResponse(Resolution resolution) {
+        Long id = resolution.getId();
         long total = voteRepository.countByResolutionId(id);
         long forCount = voteRepository.countByResolutionIdAndChoice(id, VoteChoice.FOR);
         long againstCount = voteRepository.countByResolutionIdAndChoice(id, VoteChoice.AGAINST);

@@ -42,6 +42,12 @@ public class Resolution {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    private Instant publishAt;
+
+    private Instant votingStartAt;
+
+    private Instant votingEndAt;
+
     private Instant votingStartedAt;
 
     private Instant votingEndedAt;
@@ -118,6 +124,30 @@ public class Resolution {
 
     public void setVotingStartedAt(Instant votingStartedAt) {
         this.votingStartedAt = votingStartedAt;
+    }
+
+    public Instant getPublishAt() {
+        return publishAt;
+    }
+
+    public void setPublishAt(Instant publishAt) {
+        this.publishAt = publishAt;
+    }
+
+    public Instant getVotingStartAt() {
+        return votingStartAt;
+    }
+
+    public void setVotingStartAt(Instant votingStartAt) {
+        this.votingStartAt = votingStartAt;
+    }
+
+    public Instant getVotingEndAt() {
+        return votingEndAt;
+    }
+
+    public void setVotingEndAt(Instant votingEndAt) {
+        this.votingEndAt = votingEndAt;
     }
 
     public Instant getVotingEndedAt() {

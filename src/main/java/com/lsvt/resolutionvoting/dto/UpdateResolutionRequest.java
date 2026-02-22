@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import java.time.Instant;
 
 @Schema(name = "UpdateResolutionRequest", description = "Payload to update a draft resolution.")
 public class UpdateResolutionRequest {
@@ -19,6 +20,15 @@ public class UpdateResolutionRequest {
     @Positive
     @Schema(example = "1", description = "Room id where this resolution is being voted.")
     private Long roomId;
+
+    @Schema(example = "2026-02-16T15:00:00Z", description = "Scheduled publish date/time.")
+    private Instant publishAt;
+
+    @Schema(example = "2026-02-17T15:00:00Z", description = "Scheduled voting start date/time.")
+    private Instant votingStartAt;
+
+    @Schema(example = "2026-02-18T15:00:00Z", description = "Scheduled voting end date/time.")
+    private Instant votingEndAt;
 
     public String getTitle() {
         return title;
@@ -42,6 +52,30 @@ public class UpdateResolutionRequest {
 
     public void setRoomId(Long roomId) {
         this.roomId = roomId;
+    }
+
+    public Instant getPublishAt() {
+        return publishAt;
+    }
+
+    public void setPublishAt(Instant publishAt) {
+        this.publishAt = publishAt;
+    }
+
+    public Instant getVotingStartAt() {
+        return votingStartAt;
+    }
+
+    public void setVotingStartAt(Instant votingStartAt) {
+        this.votingStartAt = votingStartAt;
+    }
+
+    public Instant getVotingEndAt() {
+        return votingEndAt;
+    }
+
+    public void setVotingEndAt(Instant votingEndAt) {
+        this.votingEndAt = votingEndAt;
     }
 }
 

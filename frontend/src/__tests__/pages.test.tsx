@@ -33,6 +33,7 @@ describe("pages", () => {
     expect(screen.getByText("Login")).toBeInTheDocument();
     expect(screen.getByText("Admin Console")).toBeInTheDocument();
     expect(screen.getByText("User Voting")).toBeInTheDocument();
+    expect(screen.getByText("Live Status")).toBeInTheDocument();
   });
 
   it("renders LoginPage and stores selected user", async () => {
@@ -68,7 +69,14 @@ describe("pages", () => {
           title: "Resolution A",
           description: "Desc",
           status: "VOTING",
-          room: { id: 1, name: "Room A", latitude: 1, longitude: 2 }
+          room: { id: 1, name: "Room A", latitude: 1, longitude: 2 },
+          createdAt: "2026-01-24T01:10:00Z",
+          updatedAt: "2026-01-24T01:10:00Z",
+          publishAt: "2026-01-24T01:12:00Z",
+          votingStartAt: "2026-01-24T01:14:00Z",
+          votingEndAt: "2026-01-24T01:20:00Z",
+          votingStartedAt: "2026-01-24T01:14:00Z",
+          votingEndedAt: null
         }
       ],
       "/api/users": [{ id: 1, name: "Admin One", email: "admin@lsvt.com", role: "ADMIN" }],
@@ -101,6 +109,54 @@ describe("pages", () => {
     expect(screen.getByText("User Directory")).toBeInTheDocument();
   });
 
+  it("allows editing published resolution before voting starts", async () => {
+    localStorage.setItem(
+      "rv_current_user",
+      JSON.stringify({ id: 1, name: "Admin One", email: "admin@lsvt.com", role: "ADMIN" })
+    );
+
+    global.fetch = mockFetch({
+      "/api/rooms": [{ id: 1, name: "Room A", latitude: 1, longitude: 2 }],
+      "/api/resolutions": [
+        {
+          id: 10,
+          title: "Resolution A",
+          description: "Desc",
+          status: "PUBLISHED",
+          room: { id: 1, name: "Room A", latitude: 1, longitude: 2 },
+          createdAt: "2026-01-24T01:10:00Z",
+          updatedAt: "2026-01-24T01:10:00Z",
+          publishAt: "2026-01-24T01:12:00Z",
+          votingStartAt: "2026-01-24T01:14:00Z",
+          votingEndAt: "2026-01-24T01:20:00Z",
+          votingStartedAt: null,
+          votingEndedAt: null
+        }
+      ],
+      "/api/users": [{ id: 1, name: "Admin One", email: "admin@lsvt.com", role: "ADMIN" }],
+      "/api/resolutions/10/results": {
+        resolutionId: 10,
+        resolutionTitle: "Resolution A",
+        resolutionDescription: "Desc",
+        status: "CLOSED",
+        room: { id: 1, name: "Room A", latitude: 1, longitude: 2 },
+        totalVotes: 0,
+        forCount: 0,
+        againstCount: 0,
+        abstainCount: 0,
+        directVotes: { total: 0, forCount: 0, againstCount: 0, abstainCount: 0 },
+        proxyVotes: { total: 0, forCount: 0, againstCount: 0, abstainCount: 0 }
+      }
+    }) as typeof fetch;
+
+    render(<AdminPage />);
+    await screen.findByText("Admin Console");
+
+    fireEvent.click(screen.getByText("Resolutions"));
+    await screen.findByText("Resolution Directory");
+    expect(screen.getByText("Edit")).toBeInTheDocument();
+  });
+
   it("redirects to login when admin is not authenticated", async () => {
     global.fetch = mockFetch({
       "/api/rooms": [],
@@ -122,7 +178,20 @@ describe("pages", () => {
 
     global.fetch = mockFetch({
       "/api/resolutions": [
-        { id: 10, title: "Resolution A", description: "Desc", status: "PUBLISHED", room: { id: 1, name: "Room A" } }
+        {
+          id: 10,
+          title: "Resolution A",
+          description: "Desc",
+          status: "PUBLISHED",
+          room: { id: 1, name: "Room A", latitude: 1, longitude: 2 },
+          createdAt: "2026-01-24T01:10:00Z",
+          updatedAt: "2026-01-24T01:10:00Z",
+          publishAt: "2026-01-24T01:12:00Z",
+          votingStartAt: null,
+          votingEndAt: null,
+          votingStartedAt: null,
+          votingEndedAt: null
+        }
       ],
       "/api/users": [{ id: 2, name: "User One", email: "user@lsvt.com", role: "USER" }],
       "/api/resolutions/10/results": {
@@ -152,7 +221,20 @@ describe("pages", () => {
 
     global.fetch = mockFetch({
       "/api/resolutions": [
-        { id: 10, title: "Resolution A", description: "Desc", status: "RESULTS_PUBLISHED", room: { id: 1, name: "Room A", latitude: 1, longitude: 2 } }
+        {
+          id: 10,
+          title: "Resolution A",
+          description: "Desc",
+          status: "RESULTS_PUBLISHED",
+          room: { id: 1, name: "Room A", latitude: 1, longitude: 2 },
+          createdAt: "2026-01-24T01:10:00Z",
+          updatedAt: "2026-01-24T01:10:00Z",
+          publishAt: "2026-01-24T01:12:00Z",
+          votingStartAt: "2026-01-24T01:14:00Z",
+          votingEndAt: "2026-01-24T01:20:00Z",
+          votingStartedAt: "2026-01-24T01:14:00Z",
+          votingEndedAt: "2026-01-24T01:20:00Z"
+        }
       ],
       "/api/users": [{ id: 2, name: "User One", email: "user@lsvt.com", role: "USER" }],
       "/api/resolutions/10/results": {
@@ -223,7 +305,14 @@ describe("pages", () => {
               title: "Resolution A",
               description: "Desc",
               status: "VOTING",
-              room: { id: 1, name: "Room A", latitude: 1, longitude: 2 }
+              room: { id: 1, name: "Room A", latitude: 1, longitude: 2 },
+              createdAt: "2026-01-24T01:10:00Z",
+              updatedAt: "2026-01-24T01:10:00Z",
+              publishAt: "2026-01-24T01:12:00Z",
+              votingStartAt: "2026-01-24T01:14:00Z",
+              votingEndAt: "2026-01-24T01:20:00Z",
+              votingStartedAt: "2026-01-24T01:14:00Z",
+              votingEndedAt: null
             }
           ]
         } as Response;

@@ -12,7 +12,7 @@ export default function HomePage() {
           <p className="mt-4 max-w-2xl text-sm text-slate-700">
             Choose a role or sign in to access the voting experience.
           </p>
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
+          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Link
               href="/login"
               className="rounded-2xl border border-slate-200 bg-white px-6 py-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
@@ -36,6 +36,15 @@ export default function HomePage() {
               <h2 className="text-lg font-semibold text-sky-900 font-display">User Voting</h2>
               <p className="mt-2 text-sm text-sky-800">
                 View resolutions, cast votes, and check results.
+              </p>
+            </Link>
+            <Link
+              href="/live"
+              className="rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+            >
+              <h2 className="text-lg font-semibold text-emerald-900 font-display">Live Status</h2>
+              <p className="mt-2 text-sm text-emerald-800">
+                Display real-time voting activity for everyone.
               </p>
             </Link>
           </div>

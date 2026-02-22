@@ -22,6 +22,12 @@ public class ResolutionResponse {
     private Instant createdAt;
     @Schema(example = "2026-01-24T01:10:00Z")
     private Instant updatedAt;
+    @Schema(example = "2026-01-24T01:12:00Z")
+    private Instant publishAt;
+    @Schema(example = "2026-01-24T01:14:00Z")
+    private Instant votingStartAt;
+    @Schema(example = "2026-01-24T01:20:00Z")
+    private Instant votingEndAt;
     @Schema(example = "2026-01-24T01:14:00Z")
     private Instant votingStartedAt;
     @Schema(example = "2026-01-24T01:20:00Z")
@@ -35,6 +41,9 @@ public class ResolutionResponse {
             ResolutionStatus status,
             Instant createdAt,
             Instant updatedAt,
+            Instant publishAt,
+            Instant votingStartAt,
+            Instant votingEndAt,
             Instant votingStartedAt,
             Instant votingEndedAt
     ) {
@@ -45,6 +54,9 @@ public class ResolutionResponse {
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.publishAt = publishAt;
+        this.votingStartAt = votingStartAt;
+        this.votingEndAt = votingEndAt;
         this.votingStartedAt = votingStartedAt;
         this.votingEndedAt = votingEndedAt;
     }
@@ -58,6 +70,9 @@ public class ResolutionResponse {
                 resolution.getStatus(),
                 resolution.getCreatedAt(),
                 resolution.getUpdatedAt(),
+                resolution.getPublishAt(),
+                resolution.getVotingStartAt(),
+                resolution.getVotingEndAt(),
                 resolution.getVotingStartedAt(),
                 resolution.getVotingEndedAt()
         );
@@ -89,6 +104,18 @@ public class ResolutionResponse {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Instant getPublishAt() {
+        return publishAt;
+    }
+
+    public Instant getVotingStartAt() {
+        return votingStartAt;
+    }
+
+    public Instant getVotingEndAt() {
+        return votingEndAt;
     }
 
     public Instant getVotingStartedAt() {

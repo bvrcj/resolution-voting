@@ -19,7 +19,14 @@ describe("user components", () => {
           title: "Resolution A",
           description: "Desc",
           status: "VOTING",
-          room: { id: 1, name: "Room A", latitude: 1, longitude: 2 }
+          room: { id: 1, name: "Room A", latitude: 1, longitude: 2 },
+          createdAt: "2026-01-24T01:10:00Z",
+          updatedAt: "2026-01-24T01:10:00Z",
+          publishAt: "2026-01-24T01:12:00Z",
+          votingStartAt: "2026-01-24T01:14:00Z",
+          votingEndAt: "2026-01-24T01:20:00Z",
+          votingStartedAt: "2026-01-24T01:14:00Z",
+          votingEndedAt: null
         }}
       />
     );
@@ -37,7 +44,14 @@ describe("user components", () => {
             title: "Resolution A",
             description: "Desc",
             status: "PUBLISHED",
-            room: { id: 1, name: "Room A", latitude: 1, longitude: 2 }
+            room: { id: 1, name: "Room A", latitude: 1, longitude: 2 },
+            createdAt: "2026-01-24T01:10:00Z",
+            updatedAt: "2026-01-24T01:10:00Z",
+            publishAt: "2026-01-24T01:12:00Z",
+            votingStartAt: null,
+            votingEndAt: null,
+            votingStartedAt: null,
+            votingEndedAt: null
           }
         ]}
         onSelectResults={onSelect}
