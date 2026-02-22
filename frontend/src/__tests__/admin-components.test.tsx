@@ -61,7 +61,7 @@ describe("admin components", () => {
     );
 
     fireEvent.change(screen.getByPlaceholderText("Room name"), { target: { value: "Room A" } });
-    fireEvent.click(screen.getByText("Create Room"));
+    fireEvent.click(screen.getByRole("button", { name: "Create Room" }));
     expect(onChange).toHaveBeenCalled();
     expect(onSubmit).toHaveBeenCalled();
   });
@@ -86,7 +86,7 @@ describe("admin components", () => {
 
     fireEvent.change(screen.getByPlaceholderText("Title"), { target: { value: "Resolution A" } });
     fireEvent.change(screen.getByPlaceholderText("Publish date/time"), { target: { value: "2026-02-16T10:30" } });
-    fireEvent.click(screen.getByText("Create Resolution"));
+    fireEvent.click(screen.getByRole("button", { name: "Create Resolution" }));
     expect(onChange).toHaveBeenCalled();
     expect(onSubmit).toHaveBeenCalled();
   });

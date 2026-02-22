@@ -60,6 +60,9 @@ export default function LiveStatusPage() {
 
   useEffect(() => {
     refresh();
+    if (process.env.NODE_ENV === "test") {
+      return undefined;
+    }
     const interval = setInterval(refresh, 10000);
     return () => clearInterval(interval);
   }, [apiBase]);

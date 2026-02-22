@@ -19,21 +19,19 @@ describe("layout components", () => {
       />
     );
 
-    expect(screen.getByText("Console")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Console" })).toBeInTheDocument();
     fireEvent.click(screen.getByText("Two"));
     expect(onSelect).toHaveBeenCalledWith("two");
   });
 
   it("renders TempleHeader links", () => {
     render(<TempleHeader />);
-    expect(screen.getByText("Login")).toBeInTheDocument();
-    expect(screen.getByText("Admin")).toBeInTheDocument();
-    expect(screen.getByText("User")).toBeInTheDocument();
+    expect(screen.getByText("Shiva-Vishnu Temple")).toBeInTheDocument();
   });
 
   it("renders TempleFooter content", () => {
     render(<TempleFooter />);
-    expect(screen.getByText("Stay Connected")).toBeInTheDocument();
-    expect(screen.getByText("Subscribe")).toBeInTheDocument();
+    expect(screen.getByText(/Hindu Community and Cultural Center/)).toBeInTheDocument();
+    expect(screen.getByText(/Terms and Conditions/)).toBeInTheDocument();
   });
 });

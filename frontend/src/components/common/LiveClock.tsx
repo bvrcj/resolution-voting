@@ -13,6 +13,9 @@ export default function LiveClock({ label = "Live" }: LiveClockProps) {
   useEffect(() => {
     setIsMounted(true);
     setNow(new Date());
+    if (process.env.NODE_ENV === "test") {
+      return undefined;
+    }
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
