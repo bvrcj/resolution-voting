@@ -38,6 +38,8 @@ type ResolutionForm = {
   publishAt: string;
   votingStartAt: string;
   votingEndAt: string;
+  primaryPurposePersonId: string;
+  secondaryPurposePersonId: string;
 };
 
 type VoteForm = {
@@ -117,7 +119,9 @@ export default function AdminPage() {
     roomId: "",
     publishAt: "",
     votingStartAt: "",
-    votingEndAt: ""
+    votingEndAt: "",
+    primaryPurposePersonId: "",
+    secondaryPurposePersonId: ""
   });
   const [editingResolutionId, setEditingResolutionId] = useState<number | null>(null);
   const [resolutionPage, setResolutionPage] = useState(1);
@@ -208,17 +212,36 @@ export default function AdminPage() {
   }, [apiBase]);
 
   useEffect(() => {
-    const stored = localStorage.getItem("rv_current_user");
-    if (!stored) {
-      router.push("/login");
-      return;
-    }
-    const parsed = JSON.parse(stored) as User;
-    if (parsed.role !== "ADMIN") {
-      router.push("/login");
-      return;
-    }
-    setCurrentUser(parsed);
+    const checkAuth = () => {
+      const stored = localStorage.getItem("rv_current_user");
+      const token = localStorage.getItem("rv_auth_token");
+      const expiry = localStorage.getItem("rv_token_expiry");
+
+      if (!stored || !token) {
+        router.push("/login");
+        return;
+      }
+
+      // Check token expiry
+      if (expiry && Date.now() > Number(expiry)) {
+        localStorage.clear();
+        router.push("/login");
+        return;
+      }
+
+      const parsed = JSON.parse(stored) as User;
+      if (parsed.role !== "ADMIN") {
+        router.push("/login");
+        return;
+      }
+      setCurrentUser(parsed);
+    };
+
+    checkAuth();
+
+    // Check session every minute
+    const interval = setInterval(checkAuth, 60000);
+    return () => clearInterval(interval);
   }, [router]);
 
   useEffect(() => {
@@ -364,7 +387,9 @@ export default function AdminPage() {
           roomId: Number(resolutionForm.roomId),
           publishAt: toIso(resolutionForm.publishAt),
           votingStartAt: toIso(resolutionForm.votingStartAt),
-          votingEndAt: toIso(resolutionForm.votingEndAt)
+          votingEndAt: toIso(resolutionForm.votingEndAt),
+          primaryPurposePersonId: resolutionForm.primaryPurposePersonId ? Number(resolutionForm.primaryPurposePersonId) : null,
+          secondaryPurposePersonId: resolutionForm.secondaryPurposePersonId ? Number(resolutionForm.secondaryPurposePersonId) : null
         })
       });
       if (!response.ok) {
@@ -376,7 +401,9 @@ export default function AdminPage() {
         roomId: "",
         publishAt: "",
         votingStartAt: "",
-        votingEndAt: ""
+        votingEndAt: "",
+        primaryPurposePersonId: "",
+        secondaryPurposePersonId: ""
       });
       setEditingResolutionId(null);
       await refreshData();
@@ -410,7 +437,9 @@ export default function AdminPage() {
       roomId: String(resolution.room?.id ?? ""),
       publishAt: toInput(resolution.publishAt),
       votingStartAt: toInput(resolution.votingStartAt),
-      votingEndAt: toInput(resolution.votingEndAt)
+      votingEndAt: toInput(resolution.votingEndAt),
+      primaryPurposePersonId: String(resolution.primaryPurposePerson?.id ?? ""),
+      secondaryPurposePersonId: String(resolution.secondaryPurposePerson?.id ?? "")
     });
     setEditingResolutionId(resolution.id);
   };
@@ -422,7 +451,9 @@ export default function AdminPage() {
       roomId: "",
       publishAt: "",
       votingStartAt: "",
-      votingEndAt: ""
+      votingEndAt: "",
+      primaryPurposePersonId: "",
+      secondaryPurposePersonId: ""
     });
     setEditingResolutionId(null);
   };
@@ -521,6 +552,25 @@ export default function AdminPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unexpected error";
       setActionStatus({ kind: "error", message });
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("rv_auth_token");
+      if (token) {
+        await fetch(`${apiBase}/api/auth/logout`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+      }
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      localStorage.clear();
+      router.push("/login");
     }
   };
 
@@ -642,8 +692,16 @@ export default function AdminPage() {
               onSelect={setActivePanel}
             >
               {currentUser && (
-                <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-xs text-amber-100">
-                  Signed in as <span className="font-semibold text-white">{currentUser.name}</span>
+                <div className="space-y-2">
+                  <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-xs text-amber-100">
+                    Signed in as <span className="font-semibold text-white">{currentUser.name}</span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full rounded-xl bg-red-600/80 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700"
+                  >
+                    Logout
+                  </button>
                 </div>
               )}
               <ApiBaseField value={apiBase} onChange={setApiBase} />
@@ -679,8 +737,16 @@ export default function AdminPage() {
                   onClose={closeSidebar}
                 >
                   {currentUser && (
-                    <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-xs text-amber-100">
-                      Signed in as <span className="font-semibold text-white">{currentUser.name}</span>
+                    <div className="space-y-2">
+                      <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-xs text-amber-100">
+                        Signed in as <span className="font-semibold text-white">{currentUser.name}</span>
+                      </div>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full rounded-xl bg-red-600/80 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700"
+                      >
+                        Logout
+                      </button>
                     </div>
                   )}
                   <ApiBaseField value={apiBase} onChange={setApiBase} />
@@ -723,6 +789,16 @@ export default function AdminPage() {
                           </h3>
                           <p className="mt-2 text-sm text-slate-600">{resolution.description}</p>
                           <p className="mt-3 text-xs text-slate-500">Room: {resolution.room?.name}</p>
+                          {(resolution.primaryPurposePerson || resolution.secondaryPurposePerson) && (
+                            <div className="mt-2 space-y-1 text-xs text-slate-600">
+                              {resolution.primaryPurposePerson && (
+                                <p>Primary: {resolution.primaryPurposePerson.name}</p>
+                              )}
+                              {resolution.secondaryPurposePerson && (
+                                <p>Secondary: {resolution.secondaryPurposePerson.name}</p>
+                              )}
+                            </div>
+                          )}
                           <div className="mt-3 grid gap-1 text-[11px] text-slate-500">
                             <span>Created: {formatDateTime(resolution.createdAt)}</span>
                             <span>Updated: {formatDateTime(resolution.updatedAt)}</span>
@@ -751,6 +827,16 @@ export default function AdminPage() {
                           </h3>
                           <p className="mt-2 text-sm text-slate-600">{resolution.description}</p>
                           <p className="mt-3 text-xs text-slate-500">Room: {resolution.room?.name}</p>
+                          {(resolution.primaryPurposePerson || resolution.secondaryPurposePerson) && (
+                            <div className="mt-2 space-y-1 text-xs text-slate-600">
+                              {resolution.primaryPurposePerson && (
+                                <p>Primary: {resolution.primaryPurposePerson.name}</p>
+                              )}
+                              {resolution.secondaryPurposePerson && (
+                                <p>Secondary: {resolution.secondaryPurposePerson.name}</p>
+                              )}
+                            </div>
+                          )}
                           <div className="mt-3 grid gap-1 text-[11px] text-slate-500">
                             <span>Created: {formatDateTime(resolution.createdAt)}</span>
                             <span>Updated: {formatDateTime(resolution.updatedAt)}</span>
@@ -779,6 +865,16 @@ export default function AdminPage() {
                           </h3>
                           <p className="mt-2 text-sm text-slate-600">{resolution.description}</p>
                           <p className="mt-3 text-xs text-slate-500">Room: {resolution.room?.name}</p>
+                          {(resolution.primaryPurposePerson || resolution.secondaryPurposePerson) && (
+                            <div className="mt-2 space-y-1 text-xs text-slate-600">
+                              {resolution.primaryPurposePerson && (
+                                <p>Primary: {resolution.primaryPurposePerson.name}</p>
+                              )}
+                              {resolution.secondaryPurposePerson && (
+                                <p>Secondary: {resolution.secondaryPurposePerson.name}</p>
+                              )}
+                            </div>
+                          )}
                           <div className="mt-3 grid gap-1 text-[11px] text-slate-500">
                             <span>Created: {formatDateTime(resolution.createdAt)}</span>
                             <span>Updated: {formatDateTime(resolution.updatedAt)}</span>
@@ -966,6 +1062,40 @@ export default function AdminPage() {
                         }
                       />
                     </label>
+                    <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Primary Purpose Person
+                      <select
+                        className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2"
+                        value={resolutionForm.primaryPurposePersonId}
+                        onChange={(event) =>
+                          setResolutionForm({ ...resolutionForm, primaryPurposePersonId: event.target.value })
+                        }
+                      >
+                        <option value="">Select user (optional)</option>
+                        {users.map((user) => (
+                          <option key={user.id} value={user.id}>
+                            {user.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Secondary Purpose Person
+                      <select
+                        className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2"
+                        value={resolutionForm.secondaryPurposePersonId}
+                        onChange={(event) =>
+                          setResolutionForm({ ...resolutionForm, secondaryPurposePersonId: event.target.value })
+                        }
+                      >
+                        <option value="">Select user (optional)</option>
+                        {users.map((user) => (
+                          <option key={user.id} value={user.id}>
+                            {user.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
                     <button
                       onClick={submitResolution}
                       disabled={!resolutionForm.roomId}
@@ -1001,6 +1131,16 @@ export default function AdminPage() {
                           </h3>
                           <p className="mt-2 text-sm text-slate-600">{resolution.description}</p>
                           <p className="mt-3 text-xs text-slate-500">Room: {resolution.room?.name}</p>
+                          {(resolution.primaryPurposePerson || resolution.secondaryPurposePerson) && (
+                            <div className="mt-2 space-y-1 text-xs text-slate-600">
+                              {resolution.primaryPurposePerson && (
+                                <p><span className="font-semibold">Primary:</span> {resolution.primaryPurposePerson.name}</p>
+                              )}
+                              {resolution.secondaryPurposePerson && (
+                                <p><span className="font-semibold">Secondary:</span> {resolution.secondaryPurposePerson.name}</p>
+                              )}
+                            </div>
+                          )}
                           <div className="mt-3 grid gap-1 text-[11px] text-slate-500">
                             <span>Created: {formatDateTime(resolution.createdAt)}</span>
                             <span>Updated: {formatDateTime(resolution.updatedAt)}</span>

@@ -11,6 +11,7 @@ import com.lsvt.resolutionvoting.model.Room;
 import com.lsvt.resolutionvoting.model.VoteChoice;
 import com.lsvt.resolutionvoting.repository.ResolutionRepository;
 import com.lsvt.resolutionvoting.repository.RoomRepository;
+import com.lsvt.resolutionvoting.repository.UserRepository;
 import com.lsvt.resolutionvoting.service.ResolutionService;
 import com.lsvt.resolutionvoting.service.VoteService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,6 +49,9 @@ class ResolutionControllerTest {
 
     @MockBean
     private RoomRepository roomRepository;
+
+    @MockBean
+    private UserRepository userRepository;
 
     @MockBean
     private ResolutionService resolutionService;

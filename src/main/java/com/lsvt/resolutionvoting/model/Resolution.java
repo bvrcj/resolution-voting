@@ -32,6 +32,14 @@ public class Resolution {
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
 
+    @ManyToOne
+    @JoinColumn(name = "primary_purpose_person_id")
+    private User primaryPurposePerson;
+
+    @ManyToOne
+    @JoinColumn(name = "secondary_purpose_person_id")
+    private User secondaryPurposePerson;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ResolutionStatus status;
@@ -156,6 +164,22 @@ public class Resolution {
 
     public void setVotingEndedAt(Instant votingEndedAt) {
         this.votingEndedAt = votingEndedAt;
+    }
+
+    public User getPrimaryPurposePerson() {
+        return primaryPurposePerson;
+    }
+
+    public void setPrimaryPurposePerson(User primaryPurposePerson) {
+        this.primaryPurposePerson = primaryPurposePerson;
+    }
+
+    public User getSecondaryPurposePerson() {
+        return secondaryPurposePerson;
+    }
+
+    public void setSecondaryPurposePerson(User secondaryPurposePerson) {
+        this.secondaryPurposePerson = secondaryPurposePerson;
     }
 }
 

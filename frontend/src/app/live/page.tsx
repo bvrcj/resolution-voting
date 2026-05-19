@@ -111,7 +111,7 @@ export default function LiveStatusPage() {
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <SectionCard
             title="Active Voting"
-            className="border-white/10 bg-white/5 text-white"
+            className="border-white/10 bg-blue-500/50 text-white"
             titleClassName="text-white"
           >
             {activeResolutions.length === 0 ? (
@@ -187,7 +187,7 @@ export default function LiveStatusPage() {
           <div className="space-y-6">
             <SectionCard
               title="Published (Waiting to Open)"
-              className="border-white/10 bg-white/5 text-white"
+              className="border-white/10 bg-blue-500/50 text-white"
               titleClassName="text-white"
             >
               {publishedResolutions.length === 0 ? (
@@ -216,7 +216,7 @@ export default function LiveStatusPage() {
 
             <SectionCard
               title="Status Overview"
-              className="border-white/10 bg-white/5 text-white"
+              className="border-white/10 bg-blue-500/50 text-white"
               titleClassName="text-white"
             >
               <div className="grid gap-4 md:grid-cols-2">

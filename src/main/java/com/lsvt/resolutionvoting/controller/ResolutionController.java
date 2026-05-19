@@ -9,8 +9,10 @@ import com.lsvt.resolutionvoting.dto.VoteRequest;
 import com.lsvt.resolutionvoting.model.Resolution;
 import com.lsvt.resolutionvoting.model.ResolutionStatus;
 import com.lsvt.resolutionvoting.model.Room;
+import com.lsvt.resolutionvoting.model.User;
 import com.lsvt.resolutionvoting.repository.ResolutionRepository;
 import com.lsvt.resolutionvoting.repository.RoomRepository;
+import com.lsvt.resolutionvoting.repository.UserRepository;
 import com.lsvt.resolutionvoting.service.ResolutionService;
 import com.lsvt.resolutionvoting.service.VoteService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,17 +49,20 @@ public class ResolutionController {
 
     private final ResolutionRepository resolutionRepository;
     private final RoomRepository roomRepository;
+    private final UserRepository userRepository;
     private final ResolutionService resolutionService;
     private final VoteService voteService;
 
     public ResolutionController(
             ResolutionRepository resolutionRepository,
             RoomRepository roomRepository,
+            UserRepository userRepository,
             ResolutionService resolutionService,
             VoteService voteService
     ) {
         this.resolutionRepository = resolutionRepository;
         this.roomRepository = roomRepository;
+        this.userRepository = userRepository;
         this.resolutionService = resolutionService;
         this.voteService = voteService;
     }
@@ -74,10 +79,25 @@ public class ResolutionController {
         validateSchedule(request.getPublishAt(), request.getVotingStartAt(), request.getVotingEndAt());
         Room room = roomRepository.findById(request.getRoomId())
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Room not found"));
+
+        User primaryPurposePerson = null;
+        if (request.getPrimaryPurposePersonId() != null) {
+            primaryPurposePerson = userRepository.findById(request.getPrimaryPurposePersonId())
+                    .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Primary purpose person not found"));
+        }
+
+        User secondaryPurposePerson = null;
+        if (request.getSecondaryPurposePersonId() != null) {
+            secondaryPurposePerson = userRepository.findById(request.getSecondaryPurposePersonId())
+                    .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Secondary purpose person not found"));
+        }
+
         Resolution resolution = new Resolution(request.getTitle(), request.getDescription(), room);
         resolution.setPublishAt(request.getPublishAt());
         resolution.setVotingStartAt(request.getVotingStartAt());
         resolution.setVotingEndAt(request.getVotingEndAt());
+        resolution.setPrimaryPurposePerson(primaryPurposePerson);
+        resolution.setSecondaryPurposePerson(secondaryPurposePerson);
         return ResolutionResponse.from(resolutionRepository.save(resolution));
     }
 
@@ -125,12 +145,27 @@ public class ResolutionController {
         }
         Room room = roomRepository.findById(request.getRoomId())
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Room not found"));
+
+        User primaryPurposePerson = null;
+        if (request.getPrimaryPurposePersonId() != null) {
+            primaryPurposePerson = userRepository.findById(request.getPrimaryPurposePersonId())
+                    .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Primary purpose person not found"));
+        }
+
+        User secondaryPurposePerson = null;
+        if (request.getSecondaryPurposePersonId() != null) {
+            secondaryPurposePerson = userRepository.findById(request.getSecondaryPurposePersonId())
+                    .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Secondary purpose person not found"));
+        }
+
         resolution.setTitle(request.getTitle());
         resolution.setDescription(request.getDescription());
         resolution.setRoom(room);
         resolution.setPublishAt(request.getPublishAt());
         resolution.setVotingStartAt(request.getVotingStartAt());
         resolution.setVotingEndAt(request.getVotingEndAt());
+        resolution.setPrimaryPurposePerson(primaryPurposePerson);
+        resolution.setSecondaryPurposePerson(secondaryPurposePerson);
         return ResolutionResponse.from(resolutionRepository.save(resolution));
     }
 

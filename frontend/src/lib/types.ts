@@ -25,6 +25,8 @@ export type Resolution = {
   votingEndAt: string | null;
   votingStartedAt: string | null;
   votingEndedAt: string | null;
+  primaryPurposePerson: User | null;
+  secondaryPurposePerson: User | null;
 };
 
 export type VoteBreakdown = {

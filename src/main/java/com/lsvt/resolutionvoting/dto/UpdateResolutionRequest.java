@@ -30,6 +30,12 @@ public class UpdateResolutionRequest {
     @Schema(example = "2026-02-18T15:00:00Z", description = "Scheduled voting end date/time.")
     private Instant votingEndAt;
 
+    @Schema(example = "1", description = "Primary purpose person user ID.")
+    private Long primaryPurposePersonId;
+
+    @Schema(example = "2", description = "Secondary purpose person user ID.")
+    private Long secondaryPurposePersonId;
+
     public String getTitle() {
         return title;
     }
@@ -76,6 +82,22 @@ public class UpdateResolutionRequest {
 
     public void setVotingEndAt(Instant votingEndAt) {
         this.votingEndAt = votingEndAt;
+    }
+
+    public Long getPrimaryPurposePersonId() {
+        return primaryPurposePersonId;
+    }
+
+    public void setPrimaryPurposePersonId(Long primaryPurposePersonId) {
+        this.primaryPurposePersonId = primaryPurposePersonId;
+    }
+
+    public Long getSecondaryPurposePersonId() {
+        return secondaryPurposePersonId;
+    }
+
+    public void setSecondaryPurposePersonId(Long secondaryPurposePersonId) {
+        this.secondaryPurposePersonId = secondaryPurposePersonId;
     }
 }
 

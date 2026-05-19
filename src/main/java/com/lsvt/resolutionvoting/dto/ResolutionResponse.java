@@ -32,6 +32,10 @@ public class ResolutionResponse {
     private Instant votingStartedAt;
     @Schema(example = "2026-01-24T01:20:00Z")
     private Instant votingEndedAt;
+    @Schema(description = "Primary purpose person")
+    private UserResponse primaryPurposePerson;
+    @Schema(description = "Secondary purpose person")
+    private UserResponse secondaryPurposePerson;
 
     public ResolutionResponse(
             Long id,
@@ -45,7 +49,9 @@ public class ResolutionResponse {
             Instant votingStartAt,
             Instant votingEndAt,
             Instant votingStartedAt,
-            Instant votingEndedAt
+            Instant votingEndedAt,
+            UserResponse primaryPurposePerson,
+            UserResponse secondaryPurposePerson
     ) {
         this.id = id;
         this.title = title;
@@ -59,6 +65,8 @@ public class ResolutionResponse {
         this.votingEndAt = votingEndAt;
         this.votingStartedAt = votingStartedAt;
         this.votingEndedAt = votingEndedAt;
+        this.primaryPurposePerson = primaryPurposePerson;
+        this.secondaryPurposePerson = secondaryPurposePerson;
     }
 
     public static ResolutionResponse from(Resolution resolution) {
@@ -74,7 +82,9 @@ public class ResolutionResponse {
                 resolution.getVotingStartAt(),
                 resolution.getVotingEndAt(),
                 resolution.getVotingStartedAt(),
-                resolution.getVotingEndedAt()
+                resolution.getVotingEndedAt(),
+                resolution.getPrimaryPurposePerson() != null ? UserResponse.from(resolution.getPrimaryPurposePerson()) : null,
+                resolution.getSecondaryPurposePerson() != null ? UserResponse.from(resolution.getSecondaryPurposePerson()) : null
         );
     }
 
@@ -124,6 +134,14 @@ public class ResolutionResponse {
 
     public Instant getVotingEndedAt() {
         return votingEndedAt;
+    }
+
+    public UserResponse getPrimaryPurposePerson() {
+        return primaryPurposePerson;
+    }
+
+    public UserResponse getSecondaryPurposePerson() {
+        return secondaryPurposePerson;
     }
 }
 
